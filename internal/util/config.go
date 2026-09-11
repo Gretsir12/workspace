@@ -1,4 +1,4 @@
-package api
+package util
 
 import (
 	"log"
@@ -17,6 +17,7 @@ type Config struct {
 	DATABASE_HOST     string
 	DATABASE_USER     string
 	DATABASE_PASSWORD string
+	PROJECTS_PATH     string
 }
 
 func NewConfig() *Config {
@@ -30,6 +31,7 @@ func NewConfig() *Config {
 		DATABASE_HOST:     mustEnv("DATABASE_HOST"),
 		DATABASE_USER:     mustEnv("DATABASE_USER"),
 		DATABASE_PASSWORD: mustEnv("DATABASE_PASSWORD"),
+		PROJECTS_PATH:     mustEnv("PROJECTS_PATH"),
 	}
 }
 

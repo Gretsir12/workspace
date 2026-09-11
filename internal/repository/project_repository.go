@@ -1,13 +1,13 @@
 package repository
 
-import "workspaces/projects/api"
+import "workspaces/projects/internal/util"
 
 type ProjectRepository struct {
-	config *api.Config
+	cfg *util.Config
 }
 
-func NewProjectRepository(c *api.Config) *ProjectRepository {
+func NewProjectRepository(config *util.Config) *ProjectRepository {
 	return &ProjectRepository{
-		config: c,
+		cfg: config,
 	}
 }
