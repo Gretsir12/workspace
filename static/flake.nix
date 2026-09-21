@@ -1,5 +1,5 @@
 {
-  description = "Portable dev shell";
+  description = "Workspace dev shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -15,7 +15,7 @@
       in {
         devShells.default = pkgs.mkShell {
           packages = [
-            nodejs_22
+            pkgs.nodejs_22
           ];
         };
       }
