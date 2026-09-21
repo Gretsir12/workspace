@@ -6,7 +6,9 @@ type CreateProjectRequest struct {
 }
 
 type Project struct {
-	ID    uint32
-	User  uint32
-	Title string
+	ID    uint32 `json:"id"`
+	User  uint32 `json:"user"`
+	Title string `json:"title"`
+
+	Files []File `json:"files"`
 }

@@ -7,10 +7,12 @@ import (
 
 type Handlers struct {
 	Project *handler.ProjectHandler
+	File    *handler.FileHandler
 }
 
 type Services struct {
 	Project *service.ProjectService
+	File    *service.FileService
 }
 
 type App struct {

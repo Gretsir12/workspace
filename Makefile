@@ -4,4 +4,4 @@ build:
 run:
 	go mod tidy
 	go build -o bin/backend ./cmd/
-	./backend
+	./bin/backend

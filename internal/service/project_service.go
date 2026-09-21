@@ -1,18 +1,12 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/repository"
 	"workspaces/projects/internal/util"
-)
-
-var (
-	ErrProjectNotFound      = errors.New("project not found")
-	ErrProjectAlreadyExists = errors.New("project already exists")
-	ErrInvalidProject       = errors.New("invalid project")
 )
 
 type ProjectService struct {
@@ -27,25 +21,28 @@ func NewProjectService(config *util.Config, r *repository.ProjectRepository) *Pr
 	}
 }
 
-func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) error {
+func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (models.Project, error) {
 	if body == nil || body.Title == nil || *body.Title == "" {
-		return fmt.Errorf("create project: %w", ErrInvalidProject)
+		return models.Project{}, fmt.Errorf("create project: %w", util.ErrInvalidProject)
 	}
 
-	if _, err := os.Stat(s.cfg.PROJECTS_PATH + *body.Title); err == nil {
-		return fmt.Errorf(
-			"create project %q: %w",
-			*body.Title,
-			ErrProjectAlreadyExists,
-		)
+	// creating project object and saving it to database
+	project := models.Project{
+		User:  12,
+		Title: *body.Title,
+		Files: []models.File{},
+	}
+	err := s.r.CreateProject(&project)
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	fmt.Println(s.cfg.PROJECTS_PATH + *body.Title)
-	if err := os.MkdirAll(s.cfg.PROJECTS_PATH+*body.Title, 0755); err != nil {
-		return fmt.Errorf("create project directory: %w", err)
+	fmt.Println(s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10))
+	if err := os.MkdirAll(s.cfg.PROJECTS_PATH+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
+		return project, fmt.Errorf("create project directory: %w", err)
 	}
 
-	return nil
+	return project, nil
 }
 
 func (s *ProjectService) buildContainer() {

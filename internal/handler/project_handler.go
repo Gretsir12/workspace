@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
+	"log"
 	"net/http"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/service"
+	"workspaces/projects/internal/util"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -42,25 +43,14 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.CreateProject(&b)
+	project, err := h.s.CreateProject(&b)
 	if err != nil {
-		http.Error(w, err.Error(), statusFromError(err))
+		http.Error(w, err.Error(), util.StatusFromError(err))
 	}
 
-}
-
-func statusFromError(err error) int {
-	switch {
-	case errors.Is(err, service.ErrProjectNotFound):
-		return http.StatusNotFound
-
-	case errors.Is(err, service.ErrProjectAlreadyExists):
-		return http.StatusConflict
-
-	case errors.Is(err, service.ErrInvalidProject):
-		return http.StatusBadRequest
-
-	default:
-		return http.StatusInternalServerError
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) // optional; 200 is the default
+	if err := json.NewEncoder(w).Encode(project); err != nil {
+		log.Printf("encode error: %v", err)
 	}
 }

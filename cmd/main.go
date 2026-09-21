@@ -11,18 +11,23 @@ import (
 
 func main() {
 	cfg := util.NewConfig()
-	// db := database.New(cfg)
+	db := app.GetConnection(cfg)
 
-	projectRepo := repository.NewProjectRepository(cfg)
+	projectRepo := repository.NewProjectRepository(cfg, db)
+	fileRepo := repository.NewFileRepository(cfg, db)
 	projectService := service.NewProjectService(cfg, projectRepo)
+	fileService := service.NewFileService(cfg, projectRepo, fileRepo)
 	projectHandler := handler.NewProjectHandler(projectService)
+	fileHandler := handler.NewFileHandler(fileService)
 
 	app := &app.App{
 		Services: app.Services{
 			Project: projectService,
+			File:    fileService,
 		},
 		Handlers: app.Handlers{
 			Project: projectHandler,
+			File:    fileHandler,
 		},
 	}
 

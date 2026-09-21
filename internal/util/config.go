@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-
 	"github.com/joho/godotenv"
 )
 
@@ -17,6 +16,7 @@ type Config struct {
 	DATABASE_HOST     string
 	DATABASE_USER     string
 	DATABASE_PASSWORD string
+	DATABASE_DB       string
 	PROJECTS_PATH     string
 }
 
@@ -31,6 +31,7 @@ func NewConfig() *Config {
 		DATABASE_HOST:     mustEnv("DATABASE_HOST"),
 		DATABASE_USER:     mustEnv("DATABASE_USER"),
 		DATABASE_PASSWORD: mustEnv("DATABASE_PASSWORD"),
+		DATABASE_DB:       mustEnv("DATABASE_DB"),
 		PROJECTS_PATH:     mustEnv("PROJECTS_PATH"),
 	}
 }
