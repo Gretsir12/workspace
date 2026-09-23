@@ -24,6 +24,11 @@ func (r *ProjectRepository) CreateProject(project *models.Project) error {
 	return err
 }
 
+func (r *ProjectRepository) UpdateProject(project *models.Project) error {
+	_, err := r.db.Model(project).WherePK().Update()
+	return err
+}
+
 func (r *ProjectRepository) GetProjectById(id uint32) (models.Project, error) {
 	project := models.Project{ID: id}
 	err := r.db.Model(project).WherePK().Select()
