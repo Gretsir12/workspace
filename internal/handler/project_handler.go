@@ -2,11 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/service"
-	"workspaces/projects/internal/util"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -31,7 +33,21 @@ func (h *ProjectHandler) Routes() chi.Router {
 }
 
 func (h *ProjectHandler) Get(w http.ResponseWriter, r *http.Request) {
-	// ...
+	id, err := strconv.ParseUint(r.PathValue("id"), 10, 32)
+	if err != nil {
+		http.Error(w, "invalid project_id", custom_errors.StatusFromError(err))
+		return
+	}
+
+	project, err := h.s.GetProject(uint32(id))
+	if err != nil {
+		http.Error(w, "project is not exist or you cannot get it", custom_errors.StatusFromError(err))
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(project); err != nil {
+		log.Printf("encode project %d: %v", id, err)
+	}
 }
 
 func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +61,7 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	project, err := h.s.CreateProject(&b)
 	if err != nil {
-		http.Error(w, err.Error(), util.StatusFromError(err))
+		http.Error(w, err.Error(), custom_errors.StatusFromError(err))
 	}
 
 	w.Header().Set("Content-Type", "application/json")

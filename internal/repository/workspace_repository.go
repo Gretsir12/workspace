@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/util"
 
 	"github.com/go-pg/pg/v10"
@@ -18,6 +19,7 @@ func NewWorkspaceRepository(config *util.Config, db *pg.DB) *WorkspaceRepository
 	}
 }
 
-func (r *WorkspaceRepository) CreateWorkspace() error {
-	return nil
+func (r *WorkspaceRepository) CreateWorkspace(workspace *models.Workspace) error {
+	_, err := r.db.Model(workspace).Insert()
+	return err
 }

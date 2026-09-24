@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -8,6 +9,8 @@ import (
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/repository"
 	"workspaces/projects/internal/util"
+
+	"github.com/go-pg/pg/v10"
 )
 
 type ProjectService struct {
@@ -22,6 +25,18 @@ func NewProjectService(config *util.Config, r *repository.ProjectRepository) *Pr
 	}
 }
 
+func (s *ProjectService) GetProject(projectId uint32) (models.Project, error) {
+	project, err := s.r.GetProjectById(projectId)
+	if err != nil {
+		if errors.Is(err, pg.ErrNoRows) { // or sql.ErrNoRows, depending on your repo
+			fmt.Println("HERE")
+			return models.Project{}, fmt.Errorf("project with id %d: %w", projectId, custom_errors.ErrProjectNotFound)
+		}
+		return models.Project{}, fmt.Errorf("get project %d: %w", projectId, err)
+	}
+	return project, nil
+}
+
 func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (models.Project, error) {
 	if err := body.Validate(); err != nil {
 		return models.Project{}, fmt.Errorf("create project: %w", custom_errors.ErrInvalidProject)
@@ -29,14 +44,14 @@ func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (model
 
 	// creating project object and saving it to database
 	project := models.Project{
-		User:         12,
+		User:         uint32(*body.OwnerID),
 		Title:        *body.Title,
 		Files:        []models.File{},
 		Dependencies: body.Dependencies,
 	}
 
 	if err := s.r.CreateProject(&project); err != nil {
-		fmt.Println(err)
+		return project, fmt.Errorf("failed to create project: %w", err)
 	}
 
 	if err := s.createProjectDir(&project); err != nil {

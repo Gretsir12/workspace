@@ -31,7 +31,7 @@ func (r *ProjectRepository) UpdateProject(project *models.Project) error {
 
 func (r *ProjectRepository) GetProjectById(id uint32) (models.Project, error) {
 	project := models.Project{ID: id}
-	err := r.db.Model(project).WherePK().Select()
+	err := r.db.Model(&project).WherePK().Select()
 	if err != nil {
 		return models.Project{}, err
 	}
