@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/service"
 
@@ -32,14 +33,13 @@ func (h *FileHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&b)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), custom_errors.StatusFromError(err))
 		return
 	}
 
 	_, err = h.s.CreateNewFile(b)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), custom_errors.StatusFromError(err))
 		return
 	}
-
 }

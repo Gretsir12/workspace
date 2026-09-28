@@ -55,8 +55,13 @@ func setupLogger(r *chi.Mux) {
 }
 
 func (a *API) setupRoutes() {
+	//projects
 	a.router.Get("/api/v1/proj/{id}", a.handlers.Project.Get)
 	a.router.Post("/api/v1/proj", a.handlers.Project.Create)
+
+	// files
+	a.router.Post("/api/v1/files", a.handlers.File.Create)
+	// a.router.Get("/api/v1/files", a.handlers.File.Get)
 }
 
 func (a *API) Run() error {
