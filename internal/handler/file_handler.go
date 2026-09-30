@@ -46,6 +46,7 @@ func (h *FileHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(file); err != nil {
 		log.Printf("encode project %d: %v", file.Path, err)
 	}

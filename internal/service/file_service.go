@@ -55,6 +55,10 @@ func checkFileExists(path string) bool {
 }
 
 func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File, error) {
+	if err := body.Validate(); err != nil {
+		return models.File{}, err
+	}
+
 	project, err := s.project_r.GetProjectById(body.ProjectID)
 	if err != nil {
 		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
@@ -66,12 +70,12 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 
 	if err := writeFile(project.Path+"/"+body.Filename, ""); err != nil {
 		fmt.Println("writeFile failed", "path", project.Path+"/"+body.Filename, "err", err)
-		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
 	file := models.File{ProjectID: project.ID, Path: project.Path + "/" + body.Filename, Text: ""}
 	if err = s.file_r.SaveFile(&file); err != nil {
-		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
 	return file, nil
@@ -85,14 +89,11 @@ func (s *FileService) GetFile(body models.GetFileRequest) (models.File, error) {
 
 	file, err := s.file_r.GetFileByPath(s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title + "/" + body.Path)
 	if err != nil {
-		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
-
-	fmt.Println(getFileText(file.Path))
-
 	return file, nil
 }
 
-// func (s *FileService) EditFile(models.GetFileRequest) (models.File, error) {
+// func (s *FileService) EditFile(models.EditFileRequest) (models.File, error) {
 //
 // }

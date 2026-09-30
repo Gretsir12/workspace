@@ -15,7 +15,7 @@ func (r *CreateProjectRequest) Validate() error {
 		r.Title == nil || *r.Title == "" ||
 		r.OwnerID == nil ||
 		r.Dependencies == nil || len(r.Dependencies) == 0 {
-		return custom_errors.ErrInvalidProject // или любой другой sentinel error
+		return custom_errors.ErrInvalidProject
 	}
 	return nil
 }

@@ -9,7 +9,7 @@ var (
 	ErrProjectNotFound      = errors.New("project not found")
 	ErrProjectAlreadyExists = errors.New("project already exists")
 	ErrInvalidProject       = errors.New("invalid project")
-	ErrInvalidfile          = errors.New("invalid file")
+	ErrInvalidFile          = errors.New("invalid file")
 	ErrFileExists           = errors.New("file exists")
 	ErrServerError          = errors.New("internal server error")
 )
@@ -28,7 +28,7 @@ func StatusFromError(err error) int {
 	case errors.Is(err, ErrServerError):
 		return http.StatusInternalServerError
 
-	case errors.Is(err, ErrInvalidfile):
+	case errors.Is(err, ErrInvalidFile):
 		return http.StatusBadRequest
 
 	case errors.Is(err, ErrFileExists):
