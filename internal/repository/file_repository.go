@@ -23,3 +23,14 @@ func (r *FileRepository) SaveFile(file *models.File) error {
 	_, err := r.db.Model(file).Insert()
 	return err
 }
+
+func (r *FileRepository) GetFileByProjectID(projectID uint32) (models.File, error) {
+    file := models.File{}
+    err := r.db.Model(&file).
+        Where("project_id = ?", projectID).
+        Select()
+    if err != nil {
+        return models.File{}, err
+    }
+    return file, nil
+}

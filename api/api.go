@@ -61,7 +61,7 @@ func (a *API) setupRoutes() {
 
 	// files
 	a.router.Post("/api/v1/files", a.handlers.File.Create)
-	// a.router.Get("/api/v1/files", a.handlers.File.Get)
+	a.router.Get("/api/v1/files", a.handlers.File.Get)
 }
 
 func (a *API) Run() error {

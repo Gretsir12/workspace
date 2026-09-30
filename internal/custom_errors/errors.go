@@ -10,6 +10,7 @@ var (
 	ErrProjectAlreadyExists = errors.New("project already exists")
 	ErrInvalidProject       = errors.New("invalid project")
 	ErrInvalidfile          = errors.New("invalid file")
+	ErrFileExists           = errors.New("file exists")
 	ErrServerError          = errors.New("internal server error")
 )
 
@@ -28,6 +29,9 @@ func StatusFromError(err error) int {
 		return http.StatusInternalServerError
 
 	case errors.Is(err, ErrInvalidfile):
+		return http.StatusBadRequest
+
+	case errors.Is(err, ErrFileExists):
 		return http.StatusBadRequest
 
 	default:

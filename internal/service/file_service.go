@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"os"
+	"errors"
 	"path/filepath"
 	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
@@ -36,10 +37,30 @@ func writeFile(path string, text string) error {
 	return os.WriteFile(path, []byte(text), 0644)
 }
 
+func getFileText(path string) (string, error) {
+	dat, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(string(dat))
+	
+	return string(dat), nil
+}
+func checkFileExists(path string) bool {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+	  return false
+	}
+	return true
+}
+
 func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File, error) {
 	project, err := s.project_r.GetProjectById(body.ProjectID)
 	if err != nil {
 		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
+	}
+
+	if checkFileExists(project.Path+"/"+body.Filename) {
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrFileExists, project.Path+"/"+body.Filename)
 	}
 
 	if err := writeFile(project.Path+"/"+body.Filename, ""); err != nil {
@@ -47,7 +68,7 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
 	}
 
-	file := models.File{ProjectID: project.ID, Path: project.Path + "/" + body.Filename}
+	file := models.File{ProjectID: project.ID, Path: project.Path + "/" + body.Filename, Text: ""}
 	if err = s.file_r.SaveFile(&file); err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
 	}
@@ -55,7 +76,13 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 	return file, nil
 }
 
-// TODO: implemnt get file logic
-func GetFileText(body models.GetFileRequest) (models.File, error) {
-	return models.File{}, nil
+func (s *FileService) GetFile(body models.GetFileRequest) (models.File, error) {
+	file, err := s.file_r.GetFileByProjectID(body.ProjectID)
+	if err != nil {
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
+	}
+
+	fmt.Println(getFileText(file.Path))
+
+	return file, nil
 }
