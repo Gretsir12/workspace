@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"errors"
+	"strconv"
 	"path/filepath"
 	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
@@ -77,7 +78,12 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 }
 
 func (s *FileService) GetFile(body models.GetFileRequest) (models.File, error) {
-	file, err := s.file_r.GetFileByProjectID(body.ProjectID)
+	project, err := s.project_r.GetProjectById(body.ProjectID)
+	if err != nil {
+		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
+	}
+
+	file, err := s.file_r.GetFileByPath(s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title + "/" + body.Path)
 	if err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidfile, err)
 	}
@@ -86,3 +92,7 @@ func (s *FileService) GetFile(body models.GetFileRequest) (models.File, error) {
 
 	return file, nil
 }
+
+// func (s *FileService) EditFile(models.GetFileRequest) (models.File, error) {
+//
+// }

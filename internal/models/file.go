@@ -10,6 +10,11 @@ type GetFileRequest struct {
 	Path  string `json:"path"`
 }
 
+type EditFileRequest struct {
+	ProjectID uint32 `json:"project_id"`
+	Path  string `json:"path"`
+}
+
 type File struct {
 	ProjectID uint32 `json:"project"`
 	Path      string `json:"path"`

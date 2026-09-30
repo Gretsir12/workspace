@@ -24,10 +24,10 @@ func (r *FileRepository) SaveFile(file *models.File) error {
 	return err
 }
 
-func (r *FileRepository) GetFileByProjectID(projectID uint32) (models.File, error) {
+func (r *FileRepository) GetFileByPath(path string) (models.File, error) {
     file := models.File{}
     err := r.db.Model(&file).
-        Where("project_id = ?", projectID).
+        Where("path = ?", path).
         Select()
     if err != nil {
         return models.File{}, err
