@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"errors"
-	"strconv"
 	"path/filepath"
 	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
@@ -81,19 +80,39 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 	return file, nil
 }
 
-func (s *FileService) GetFile(body models.GetFileRequest) (models.File, error) {
-	project, err := s.project_r.GetProjectById(body.ProjectID)
-	if err != nil {
-		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
-	}
+func (s *FileService) GetFile(id uint32) (models.File, error) {
 
-	file, err := s.file_r.GetFileByPath(s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title + "/" + body.Path)
+	file, err := s.file_r.GetFileByID(id)
 	if err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
+
+	// it is for checking rights in future
+	// project, err := s.project_r.GetProjectById(file.ProjectID)
+	// if err != nil {
+	// 	return models.File{}, fmt.Errorf("not found project with id: %d %w", file.ProjectID, custom_errors.ErrProjectNotFound)
+	// }
+
 	return file, nil
 }
 
-// func (s *FileService) EditFile(models.EditFileRequest) (models.File, error) {
-//
-// }
+func (s *FileService) EditFile(body *models.EditFileRequest) (models.File, error) {
+	file, err := s.file_r.GetFileByID(body.ID)
+	if err != nil {
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
+	}
+
+	// TODO: implement checking rights by a jwt token
+
+	writeFile(file.Path, body.Text)
+	file.Text, err = getFileText(file.Path)	
+	if err != nil {
+		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
+	}
+
+	if err = s.file_r.UpdateFile(&file); err != nil {
+		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
+	}
+
+	return file, nil
+}

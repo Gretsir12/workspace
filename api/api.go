@@ -60,8 +60,9 @@ func (a *API) setupRoutes() {
 	a.router.Post("/api/v1/proj", a.handlers.Project.Create)
 
 	// files
+	a.router.Get("/api/v1/files/{id}", a.handlers.File.Get)
 	a.router.Post("/api/v1/files", a.handlers.File.Create)
-	a.router.Get("/api/v1/files", a.handlers.File.Get)
+	a.router.Put("/api/v1/files", a.handlers.File.Update)
 }
 
 func (a *API) Run() error {

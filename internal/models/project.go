@@ -28,5 +28,4 @@ type Project struct {
 	Dependencies []Dependency `json:"dependencies"`
 
 	WorkspaceId uint32 `json:"workspace_id"`
-	Files       []File `json:"files"`
 }

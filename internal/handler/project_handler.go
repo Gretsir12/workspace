@@ -44,7 +44,6 @@ func (h *ProjectHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(project); err != nil {
 		log.Printf("encode project %d: %v", id, err)
 	}
@@ -65,7 +64,7 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK) // optional; 200 is the default
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(project); err != nil {
 		log.Printf("encode error: %v", err)
 	}

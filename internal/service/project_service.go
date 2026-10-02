@@ -46,7 +46,6 @@ func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (model
 	project := models.Project{
 		User:         uint32(*body.OwnerID),
 		Title:        *body.Title,
-		Files:        []models.File{},
 		Dependencies: body.Dependencies,
 	}
 
@@ -84,6 +83,6 @@ func (s *ProjectService) updateProjectPath(project *models.Project) error {
 	return nil
 }
 
-func (s *ProjectService) buildContainer() {
-
-}
+// func (s *ProjectService) buildContainer() {
+//
+// }

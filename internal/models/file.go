@@ -23,12 +23,12 @@ type GetFileRequest struct {
 }
 
 type EditFileRequest struct {
-	ProjectID uint32 `json:"project_id"`
-	Path  string `json:"path"`
+	ID uint32 `json:"id"`
 	Text string `json:text`
 }
 
 type File struct {
+	ID uint32 `json:"id"`
 	ProjectID uint32 `json:"project"`
 	Path      string `json:"path"`
 	Text      string `json:text`

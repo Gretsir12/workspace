@@ -24,6 +24,14 @@ func (r *FileRepository) SaveFile(file *models.File) error {
 	return err
 }
 
+func (r *FileRepository) GetFileByID(id uint32) (models.File, error) {
+	file := models.File{ID: id}
+	if err := r.db.Model(&file).WherePK().Select(); err != nil {
+		return file, err
+	}
+	return file, nil
+}
+
 func (r *FileRepository) GetFileByPath(path string) (models.File, error) {
     file := models.File{}
     err := r.db.Model(&file).
@@ -33,4 +41,12 @@ func (r *FileRepository) GetFileByPath(path string) (models.File, error) {
         return models.File{}, err
     }
     return file, nil
+}
+
+func (r *FileRepository) UpdateFile(file *models.File) error {
+	_, err := r.db.Model(file).WherePK().Update()
+	if err != nil {
+		return err
+	}
+	return nil
 }
