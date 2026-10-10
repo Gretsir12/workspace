@@ -26,7 +26,7 @@ var (
 func StatusFromError(err error) int {
 	switch {
 	case errors.Is(err, ErrProjectNotFound):
-		return http.StatusNotFound
+		return http.StatusBadRequest
 
 	case errors.Is(err, ErrProjectAlreadyExists):
 		return http.StatusConflict

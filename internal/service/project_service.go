@@ -28,8 +28,7 @@ func NewProjectService(config *config.Config, r *repository.ProjectRepository) *
 func (s *ProjectService) GetProject(projectId uint32) (models.Project, error) {
 	project, err := s.r.GetProjectById(projectId)
 	if err != nil {
-		if errors.Is(err, pg.ErrNoRows) { // or sql.ErrNoRows, depending on your repo
-			fmt.Println("HERE")
+		if errors.Is(err, pg.ErrNoRows) {
 			return models.Project{}, fmt.Errorf("project with id %d: %w", projectId, custom_errors.ErrProjectNotFound)
 		}
 		return models.Project{}, fmt.Errorf("get project %d: %w", projectId, err)

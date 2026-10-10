@@ -2,23 +2,35 @@ package projects
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-pg/pg/v10"
 
 	"workspaces/internal/platform/config"
-	"workspaces/projects/internal/app"
+	"workspaces/projects/internal/handler"
+	"workspaces/projects/internal/module"
+	"workspaces/projects/internal/repository"
+	"workspaces/projects/internal/service"
 )
 
-type Module struct{ app *app.App }
+func New(ctx context.Context, cfg *config.Config, db *pg.DB) *module.Module {
 
-func New(ctx context.Context, cfg *config.Config, db *pg.DB) (*Module, error) {
-	a, err := app.New(ctx, cfg, db)
-	if err != nil {
-		return nil, fmt.Errorf("register project app: %w", err)
+	projectRepoisory := repository.NewProjectRepository(cfg, db)
+	fileRepository := repository.NewFileRepository(cfg, db)
+
+	projectService := service.NewProjectService(cfg, projectRepoisory)
+	fileService := service.NewFileService(cfg, projectRepoisory, fileRepository)
+
+	projectHandler := handler.NewProjectHandler(projectService)
+	fileHandler := handler.NewFileHandler(fileService)
+
+	return &module.Module{
+		Ctx: ctx,
+		Cfg: cfg,
+		Db:  db,
+
+		Handlers: &module.Handlers{
+			Project: projectHandler,
+			File:    fileHandler,
+		},
 	}
-	return &Module{app: a}, nil
 }
-
-func (m *Module) Routes(r chi.Router) { m.app.Routes(r) }
