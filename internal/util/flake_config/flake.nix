@@ -1,5 +1,5 @@
 {
-  description = "Workspace dev shell";
+  description = "Portable dev shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -15,8 +15,19 @@
       in {
         devShells.default = pkgs.mkShell {
           packages = [
-            pkgs.nodejs_22
+
           ];
+        };
+
+        apps.default = {
+          type = "app";
+          program = let
+            script = pkgs.writeShellScript "run-maven" ''
+              export JAVA_HOME=${pkgs.jdk17_headless}
+              export PATH=${pkgs.jdk17_headless}/bin:${pkgs.maven}/bin:$PATH
+              exec mvn spring-boot:run
+            '';
+          in "${script}";
         };
       }
     );
