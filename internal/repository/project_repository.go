@@ -1,37 +1,38 @@
 package repository
 
 import (
+	"context"
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/models"
-	"workspaces/projects/internal/util"
 
 	"github.com/go-pg/pg/v10"
 )
 
 type ProjectRepository struct {
-	cfg *util.Config
+	cfg *config.Config
 	db  *pg.DB
 }
 
-func NewProjectRepository(config *util.Config, db *pg.DB) *ProjectRepository {
+func NewProjectRepository(config *config.Config, db *pg.DB) *ProjectRepository {
 	return &ProjectRepository{
 		cfg: config,
 		db:  db,
 	}
 }
 
-func (r *ProjectRepository) CreateProject(project *models.Project) error {
-	_, err := r.db.Model(project).Insert()
+func (r *ProjectRepository) CreateProject(ctx context.Context, project *models.Project) error {
+	_, err := r.db.ModelContext(ctx, project).Insert()
 	return err
 }
 
-func (r *ProjectRepository) UpdateProject(project *models.Project) error {
-	_, err := r.db.Model(project).WherePK().Update()
+func (r *ProjectRepository) UpdateProject(ctx context.Context, project *models.Project) error {
+	_, err := r.db.ModelContext(ctx, project).WherePK().Update()
 	return err
 }
 
-func (r *ProjectRepository) GetProjectById(id uint32) (models.Project, error) {
+func (r *ProjectRepository) GetProjectById(ctx context.Context, id uint32) (models.Project, error) {
 	project := models.Project{ID: id}
-	err := r.db.Model(&project).WherePK().Select()
+	err := r.db.ModelContext(ctx, &project).WherePK().Select()
 	if err != nil {
 		return models.Project{}, err
 	}
