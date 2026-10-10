@@ -19,13 +19,10 @@ func main() {
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Load config errror %w", err)
+		log.Fatal("Load config errror: ", err)
 	}
 
 	db := database.GetConnection(&cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
 	defer db.Close()
 
 	projectsMod, err := projects.New(ctx, &cfg, db)
