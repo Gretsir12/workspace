@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -25,8 +26,8 @@ func NewProjectService(config *config.Config, r *repository.ProjectRepository) *
 	}
 }
 
-func (s *ProjectService) GetProject(projectId uint32) (models.Project, error) {
-	project, err := s.r.GetProjectById(projectId)
+func (s *ProjectService) GetProject(ctx context.Context, projectId uint32) (models.Project, error) {
+	project, err := s.r.GetProjectById(ctx, projectId)
 	if err != nil {
 		if errors.Is(err, pg.ErrNoRows) {
 			return models.Project{}, fmt.Errorf("project with id %d: %w", projectId, custom_errors.ErrProjectNotFound)
@@ -36,7 +37,7 @@ func (s *ProjectService) GetProject(projectId uint32) (models.Project, error) {
 	return project, nil
 }
 
-func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (models.Project, error) {
+func (s *ProjectService) CreateProject(ctx context.Context, body *models.CreateProjectRequest) (models.Project, error) {
 	if err := body.Validate(); err != nil {
 		return models.Project{}, fmt.Errorf("create project: %w", custom_errors.ErrInvalidProject)
 	}
@@ -48,7 +49,7 @@ func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (model
 		Dependencies: body.Dependencies,
 	}
 
-	if err := s.r.CreateProject(&project); err != nil {
+	if err := s.r.CreateProject(ctx, &project); err != nil {
 		return project, fmt.Errorf("failed to create project: %w", err)
 	}
 
@@ -57,14 +58,14 @@ func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (model
 	}
 
 	// updating project path
-
-	if err := s.updateProjectPath(&project); err != nil {
+	if err := s.updateProjectPath(ctx, &project); err != nil {
 		return project, fmt.Errorf("update project dir: %w", custom_errors.ErrServerError)
 	}
 
 	return project, nil
 }
 
+// os.MkdirAll does not accept a context, so none is passed here
 func (s *ProjectService) createProjectDir(project *models.Project) error {
 	fmt.Println(s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title)
 	if err := os.MkdirAll(s.cfg.ProjectPath+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
@@ -73,10 +74,10 @@ func (s *ProjectService) createProjectDir(project *models.Project) error {
 	return nil
 }
 
-func (s *ProjectService) updateProjectPath(project *models.Project) error {
+func (s *ProjectService) updateProjectPath(ctx context.Context, project *models.Project) error {
 	project.Path = s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title
 
-	if err := s.r.UpdateProject(project); err != nil {
+	if err := s.r.UpdateProject(ctx, project); err != nil {
 		return fmt.Errorf("update path to project directory: %w", custom_errors.ErrProjectNotFound)
 	}
 	return nil

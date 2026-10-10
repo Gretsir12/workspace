@@ -31,7 +31,7 @@ func (h *FileHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := h.s.CreateNewFile(b)
+	file, err := h.s.CreateNewFile(r.Context(), b)
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to create file: %v", err), custom_errors.StatusFromError(err))
 		return
@@ -51,7 +51,7 @@ func (h *FileHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := h.s.GetFile(uint32(fileID))
+	file, err := h.s.GetFile(r.Context(), uint32(fileID))
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to get file: %v", err), custom_errors.StatusFromError(err))
 		return
@@ -72,9 +72,10 @@ func (h *FileHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := h.s.EditFile(&b)
+	file, err := h.s.EditFile(r.Context(), &b)
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to update file: %v", err), custom_errors.StatusFromError(err))
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -91,7 +92,7 @@ func (h *FileHandler) GetAllProjectFiles(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	files, err := h.s.GetFilesList(uint32(project_id))
+	files, err := h.s.GetFilesList(r.Context(), uint32(project_id))
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to get files: %v", err), custom_errors.StatusFromError(err))
 		return

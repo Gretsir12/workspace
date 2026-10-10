@@ -28,7 +28,7 @@ func (h *ProjectHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.s.GetProject(uint32(id))
+	project, err := h.s.GetProject(r.Context(), uint32(id))
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to get project: %v", err), custom_errors.StatusFromError(err))
 		return
@@ -49,9 +49,10 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.s.CreateProject(&b)
+	project, err := h.s.CreateProject(r.Context(), &b)
 	if err != nil {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to create project: %v", err), custom_errors.StatusFromError(err))
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

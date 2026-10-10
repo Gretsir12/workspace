@@ -1,11 +1,11 @@
+// projects/internal/module/module.go
 package module
 
 import (
-	"context"
-	"workspaces/internal/platform/config"
+	platform "workspaces/internal/platform/module"
 	"workspaces/projects/internal/handler"
-
-	"github.com/go-pg/pg/v10"
+	"workspaces/projects/internal/repository"
+	"workspaces/projects/internal/service"
 )
 
 type Handlers struct {
@@ -14,9 +14,25 @@ type Handlers struct {
 }
 
 type Module struct {
-	Ctx context.Context
-	Cfg *config.Config
-	Db  *pg.DB
-
 	Handlers *Handlers
 }
+
+// проверка на этапе компиляции, что Module реализует интерфейс
+var _ platform.Module = (*Module)(nil)
+
+func New(deps platform.Deps) *Module {
+	projectRepo := repository.NewProjectRepository(deps.Cfg, deps.DB)
+	fileRepo := repository.NewFileRepository(deps.Cfg, deps.DB)
+
+	projectSvc := service.NewProjectService(deps.Cfg, projectRepo)
+	fileSvc := service.NewFileService(deps.Cfg, projectRepo, fileRepo)
+
+	return &Module{
+		Handlers: &Handlers{
+			Project: handler.NewProjectHandler(projectSvc),
+			File:    handler.NewFileHandler(fileSvc),
+		},
+	}
+}
+
+func (m *Module) Name() string { return "projects" }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -29,7 +30,7 @@ func NewFileService(config *config.Config, project_r *repository.ProjectReposito
 	}
 }
 
-// some staff functions
+// some staff functions (filesystem calls, no context needed)
 func writeFile(path string, text string) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -54,8 +55,8 @@ func checkFileExists(path string) bool {
 }
 
 // business logic
-func (s *FileService) GetFilesList(project_id uint32) ([]models.File, error) {
-	files, err := s.file_r.GetAllFilesByProjectID(project_id)
+func (s *FileService) GetFilesList(ctx context.Context, project_id uint32) ([]models.File, error) {
+	files, err := s.file_r.GetAllFilesByProjectID(ctx, project_id)
 	if err != nil {
 		return []models.File{}, fmt.Errorf("not found files with project_id: %d %w", project_id, custom_errors.ErrProjectNotFound)
 	}
@@ -63,12 +64,12 @@ func (s *FileService) GetFilesList(project_id uint32) ([]models.File, error) {
 	return files, nil
 }
 
-func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File, error) {
+func (s *FileService) CreateNewFile(ctx context.Context, body models.CreateFileRequest) (models.File, error) {
 	if err := body.Validate(); err != nil {
 		return models.File{}, err
 	}
 
-	project, err := s.project_r.GetProjectById(body.ProjectID)
+	project, err := s.project_r.GetProjectById(ctx, body.ProjectID)
 	if err != nil {
 		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
 	}
@@ -83,31 +84,30 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 	}
 
 	file := models.File{ProjectID: project.ID, Path: project.Path + "/" + body.Filename, Text: ""}
-	if err = s.file_r.SaveFile(&file); err != nil {
+	if err = s.file_r.SaveFile(ctx, &file); err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
 	return file, nil
 }
 
-func (s *FileService) GetFile(id uint32) (models.File, error) {
-
-	file, err := s.file_r.GetFileByID(id)
+func (s *FileService) GetFile(ctx context.Context, id uint32) (models.File, error) {
+	file, err := s.file_r.GetFileByID(ctx, id)
 	if err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
 	// it is for checking rights in future
-	// project, err := s.project_r.GetProjectById(file.ProjectID)
+	// project, err := s.project_r.GetProjectById(ctx, file.ProjectID)
 	// if err != nil {
-	// 	return models.File{}, fmt.Errorf("not found project with id: %d %w", file.ProjectID, custom_errors.ErrProjectNotFound)
+	//  return models.File{}, fmt.Errorf("not found project with id: %d %w", file.ProjectID, custom_errors.ErrProjectNotFound)
 	// }
 
 	return file, nil
 }
 
-func (s *FileService) EditFile(body *models.EditFileRequest) (models.File, error) {
-	file, err := s.file_r.GetFileByID(body.ID)
+func (s *FileService) EditFile(ctx context.Context, body *models.EditFileRequest) (models.File, error) {
+	file, err := s.file_r.GetFileByID(ctx, body.ID)
 	if err != nil {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
@@ -120,7 +120,7 @@ func (s *FileService) EditFile(body *models.EditFileRequest) (models.File, error
 		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
-	if err = s.file_r.UpdateFile(&file); err != nil {
+	if err = s.file_r.UpdateFile(ctx, &file); err != nil {
 		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
