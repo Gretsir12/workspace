@@ -1,17 +1,17 @@
 package service
 
 import (
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/repository"
-	"workspaces/projects/internal/util"
 )
 
 type WorkspaceService struct {
-	cfg         *util.Config
+	cfg         *config.Config
 	project_r   repository.ProjectRepository
 	workspace_r repository.WorkspaceRepository
 }
 
-func NewWorkspaceService(config *util.Config, project_r *repository.ProjectRepository, workspace_r repository.WorkspaceRepository) *WorkspaceService {
+func NewWorkspaceService(config *config.Config, project_r *repository.ProjectRepository, workspace_r repository.WorkspaceRepository) *WorkspaceService {
 	return &WorkspaceService{
 		cfg:         config,
 		project_r:   *project_r,
@@ -19,4 +19,6 @@ func NewWorkspaceService(config *util.Config, project_r *repository.ProjectRepos
 	}
 }
 
-func (s *WorkspaceService) CreateNewWorkspace() {}
+func (s *WorkspaceService) CreateNewWorkspace() {
+
+}

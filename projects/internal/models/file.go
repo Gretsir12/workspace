@@ -1,6 +1,6 @@
 package models
 
-import(
+import (
 	"workspaces/projects/internal/custom_errors"
 )
 
@@ -13,23 +13,23 @@ func (self *CreateFileRequest) Validate() error {
 	if self == nil ||
 		self.Filename == "" {
 		return custom_errors.ErrInvalidFile
-	}	
+	}
 	return nil
 }
 
 type GetFileRequest struct {
 	ProjectID uint32 `json:"project_id"`
-	Path  string `json:"path"`
+	Path      string `json:"path"`
 }
 
 type EditFileRequest struct {
-	ID uint32 `json:"id"`
+	ID   uint32 `json:"id"`
 	Text string `json:text`
 }
 
 type File struct {
-	ID uint32 `json:"id"`
-	ProjectID uint32 `json:"project"`
+	ID        uint32 `json:"id"`
+	ProjectID uint32 `json:"project_id"`
 	Path      string `json:"path"`
-	Text      string `json:text`
+	Text      string `json:"text"`
 }

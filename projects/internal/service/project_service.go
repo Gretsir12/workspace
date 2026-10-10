@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/repository"
-	"workspaces/projects/internal/util"
 
 	"github.com/go-pg/pg/v10"
 )
 
 type ProjectService struct {
 	r   *repository.ProjectRepository
-	cfg *util.Config
+	cfg *config.Config
 }
 
-func NewProjectService(config *util.Config, r *repository.ProjectRepository) *ProjectService {
+func NewProjectService(config *config.Config, r *repository.ProjectRepository) *ProjectService {
 	return &ProjectService{
 		r:   r,
 		cfg: config,
@@ -67,15 +67,15 @@ func (s *ProjectService) CreateProject(body *models.CreateProjectRequest) (model
 }
 
 func (s *ProjectService) createProjectDir(project *models.Project) error {
-	fmt.Println(s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title)
-	if err := os.MkdirAll(s.cfg.PROJECTS_PATH+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
+	fmt.Println(s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title)
+	if err := os.MkdirAll(s.cfg.ProjectPath+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
 		return fmt.Errorf("create project directory: %w", err)
 	}
 	return nil
 }
 
 func (s *ProjectService) updateProjectPath(project *models.Project) error {
-	project.Path = s.cfg.PROJECTS_PATH + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title
+	project.Path = s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title
 
 	if err := s.r.UpdateProject(project); err != nil {
 		return fmt.Errorf("update path to project directory: %w", custom_errors.ErrProjectNotFound)

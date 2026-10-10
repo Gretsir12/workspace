@@ -1,18 +1,18 @@
 package repository
 
 import (
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/models"
-	"workspaces/projects/internal/util"
 
 	"github.com/go-pg/pg/v10"
 )
 
 type FileRepository struct {
-	cfg *util.Config
+	cfg *config.Config
 	db  *pg.DB
 }
 
-func NewFileRepository(config *util.Config, db *pg.DB) *FileRepository {
+func NewFileRepository(config *config.Config, db *pg.DB) *FileRepository {
 	return &FileRepository{
 		cfg: config,
 		db:  db,
@@ -33,14 +33,14 @@ func (r *FileRepository) GetFileByID(id uint32) (models.File, error) {
 }
 
 func (r *FileRepository) GetFileByPath(path string) (models.File, error) {
-    file := models.File{}
-    err := r.db.Model(&file).
-        Where("path = ?", path).
-        Select()
-    if err != nil {
-        return models.File{}, err
-    }
-    return file, nil
+	file := models.File{}
+	err := r.db.Model(&file).
+		Where("path = ?", path).
+		Select()
+	if err != nil {
+		return models.File{}, err
+	}
+	return file, nil
 }
 
 func (r *FileRepository) UpdateFile(file *models.File) error {
@@ -49,4 +49,15 @@ func (r *FileRepository) UpdateFile(file *models.File) error {
 		return err
 	}
 	return nil
+}
+
+func (r *FileRepository) GetAllFilesByProjectID(project_id uint32) ([]models.File, error) {
+	files := []models.File{}
+	err := r.db.Model(&files).
+		Where("project_id = ?", project_id).
+		Select()
+	if err != nil {
+		return []models.File{}, err
+	}
+	return files, nil
 }

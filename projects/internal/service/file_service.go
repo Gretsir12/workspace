@@ -1,14 +1,14 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"errors"
 	"path/filepath"
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/custom_errors"
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/repository"
-	"workspaces/projects/internal/util"
 )
 
 type BASE_PATH string
@@ -18,10 +18,10 @@ var TMP_PATH BASE_PATH = "./tmp/"
 type FileService struct {
 	project_r *repository.ProjectRepository
 	file_r    *repository.FileRepository
-	cfg       *util.Config
+	cfg       *config.Config
 }
 
-func NewFileService(config *util.Config, project_r *repository.ProjectRepository, file_r *repository.FileRepository) *FileService {
+func NewFileService(config *config.Config, project_r *repository.ProjectRepository, file_r *repository.FileRepository) *FileService {
 	return &FileService{
 		project_r: project_r,
 		file_r:    file_r,
@@ -29,6 +29,7 @@ func NewFileService(config *util.Config, project_r *repository.ProjectRepository
 	}
 }
 
+// some staff functions
 func writeFile(path string, text string) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -42,15 +43,24 @@ func getFileText(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(dat))
-	
 	return string(dat), nil
 }
+
 func checkFileExists(path string) bool {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-	  return false
+		return false
 	}
 	return true
+}
+
+// business logic
+func (s *FileService) GetFilesList(project_id uint32) ([]models.File, error) {
+	files, err := s.file_r.GetAllFilesByProjectID(project_id)
+	if err != nil {
+		return []models.File{}, fmt.Errorf("not found files with project_id: %d %w", project_id, custom_errors.ErrProjectNotFound)
+	}
+
+	return files, nil
 }
 
 func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File, error) {
@@ -63,7 +73,7 @@ func (s *FileService) CreateNewFile(body models.CreateFileRequest) (models.File,
 		return models.File{}, fmt.Errorf("not found project with id: %d %w", body.ProjectID, custom_errors.ErrProjectNotFound)
 	}
 
-	if checkFileExists(project.Path+"/"+body.Filename) {
+	if checkFileExists(project.Path + "/" + body.Filename) {
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrFileExists, project.Path+"/"+body.Filename)
 	}
 
@@ -105,7 +115,7 @@ func (s *FileService) EditFile(body *models.EditFileRequest) (models.File, error
 	// TODO: implement checking rights by a jwt token
 
 	writeFile(file.Path, body.Text)
-	file.Text, err = getFileText(file.Path)	
+	file.Text, err = getFileText(file.Path)
 	if err != nil {
 		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}

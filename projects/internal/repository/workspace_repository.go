@@ -1,18 +1,18 @@
 package repository
 
 import (
+	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/models"
-	"workspaces/projects/internal/util"
 
 	"github.com/go-pg/pg/v10"
 )
 
 type WorkspaceRepository struct {
-	cfg *util.Config
+	cfg *config.Config
 	db  *pg.DB
 }
 
-func NewWorkspaceRepository(config *util.Config, db *pg.DB) *WorkspaceRepository {
+func NewWorkspaceRepository(config *config.Config, db *pg.DB) *WorkspaceRepository {
 	return &WorkspaceRepository{
 		cfg: config,
 		db:  db,

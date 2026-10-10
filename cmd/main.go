@@ -1,36 +1,42 @@
 package main
 
 import (
-	"workspaces/projects/api"
-	"workspaces/projects/internal/app"
-	"workspaces/projects/internal/handler"
-	"workspaces/projects/internal/repository"
-	"workspaces/projects/internal/service"
-	"workspaces/projects/internal/util"
+	"context"
+	"fmt"
+	"log"
+	"os/signal"
+	"syscall"
+
+	"workspaces/internal/platform/config"
+	"workspaces/internal/platform/database"
+	"workspaces/internal/platform/httpserver"
+	"workspaces/projects"
 )
 
 func main() {
-	cfg := util.NewConfig()
-	db := app.GetConnection(cfg)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	projectRepo := repository.NewProjectRepository(cfg, db)
-	fileRepo := repository.NewFileRepository(cfg, db)
-	projectService := service.NewProjectService(cfg, projectRepo)
-	fileService := service.NewFileService(cfg, projectRepo, fileRepo)
-	projectHandler := handler.NewProjectHandler(projectService)
-	fileHandler := handler.NewFileHandler(fileService)
-
-	app := &app.App{
-		Services: app.Services{
-			Project: projectService,
-			File:    fileService,
-		},
-		Handlers: app.Handlers{
-			Project: projectHandler,
-			File:    fileHandler,
-		},
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Load config errror %w", err)
 	}
 
-	server := api.New(cfg, app.Handlers)
-	server.Run()
+	db := database.GetConnection(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	projectsMod, err := projects.New(ctx, &cfg, db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := httpserver.NewRouter("projects-api")
+	r.Route("/api/v1", projectsMod.Routes)
+
+	if err := httpserver.Run(ctx, fmt.Sprintf(":%d", cfg.APIPort), r); err != nil {
+		log.Fatal(err)
+	}
 }

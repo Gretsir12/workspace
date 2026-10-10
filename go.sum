@@ -4,6 +4,8 @@ github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWo
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/go-chi/chi/v5 v5.3.2 h1:5YQkICvTCSZ25hoRsyJazN0scjzKGiu4VAUc7H1o1nY=
 github.com/go-chi/chi/v5 v5.3.2/go.mod h1:R+tYY2hNuVUUjxoPtqUdgBqevM9s9njzkTLutVsOCto=
+github.com/go-chi/cors v1.2.2 h1:Jmey33TE+b+rB7fT8MUy1u0I4L+NARQlK6LhzKPSyQE=
+github.com/go-chi/cors v1.2.2/go.mod h1:sSbTewc+6wYHBBCW7ytsFSn836hqM7JxpglAy2Vzc58=
 github.com/go-chi/httplog/v3 v3.5.0 h1:QTd0cRZGznBMC1J9hm4reEfgneV92hvSHOoPR97f/aE=
 github.com/go-chi/httplog/v3 v3.5.0/go.mod h1:tDhJo9G+F4mioDgX4pKbyA0uVZwCtHejoSsDkvJkFkU=
 github.com/go-pg/pg/v10 v10.15.1 h1:qN+QWSvwPqrYQc/vtWnR5i4q4VEqcKSSiq5zCP8F/mY=
