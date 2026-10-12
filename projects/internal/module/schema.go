@@ -11,6 +11,7 @@ func createSchema(db *pg.DB) error {
 	models := []interface{}{
 		(*models.Project)(nil),
 		(*models.File)(nil),
+		(*models.Image)(nil),
 		(*models.Workspace)(nil),
 	}
 

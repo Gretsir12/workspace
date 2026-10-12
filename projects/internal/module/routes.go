@@ -10,4 +10,6 @@ func (m *Module) Routes(r chi.Router) {
 	r.Get("/files/{project_id}", m.Handlers.File.GetAllProjectFiles)
 	r.Post("/files", m.Handlers.File.Create)
 	r.Put("/files", m.Handlers.File.Update)
+
+	r.Get("/ws", m.Handlers.Workspace.Open)
 }

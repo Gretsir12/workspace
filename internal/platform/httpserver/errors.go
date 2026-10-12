@@ -5,7 +5,17 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
+
+// WSError sends an error message over an upgraded WebSocket connection.
+func WSError(conn *websocket.Conn, message string) error {
+	return conn.WriteJSON(ErrorResponse{
+		Message:   message,
+		Timestamp: time.Now(),
+	})
+}
 
 type ErrorResponse struct {
 	Message   string    `json:"message"`
@@ -35,6 +45,6 @@ func returnInternalServerError(w http.ResponseWriter) {
 	}
 
 	if err := json.NewEncoder(w).Encode(body); err != nil {
-		log.Fatal("Error encode 500 error: ", err)
+		log.Printf("Error encode 500 error: ", err)
 	}
 }

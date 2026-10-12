@@ -24,7 +24,7 @@ type GetFileRequest struct {
 
 type EditFileRequest struct {
 	ID   uint32 `json:"id"`
-	Text string `json:text`
+	Text string `json:"text"`
 }
 
 type File struct {

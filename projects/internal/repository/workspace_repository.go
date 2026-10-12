@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"workspaces/internal/platform/config"
 	"workspaces/projects/internal/models"
 
@@ -19,7 +20,35 @@ func NewWorkspaceRepository(config *config.Config, db *pg.DB) *WorkspaceReposito
 	}
 }
 
-func (r *WorkspaceRepository) CreateWorkspace(workspace *models.Workspace) error {
-	_, err := r.db.Model(workspace).Insert()
+func (r *WorkspaceRepository) CreateWorkspace(ctx context.Context, workspace *models.Workspace) error {
+	_, err := r.db.ModelContext(ctx, workspace).Insert() // ID заполнится через RETURNING
+	return err
+}
+
+func (r *WorkspaceRepository) FindWorkspaceById(ctx context.Context, id uint32) (*models.Workspace, error) {
+	workspace := &models.Workspace{ID: id}
+	err := r.db.ModelContext(ctx, workspace).
+		Relation("Image").
+		WherePK().
+		Select()
+	if err != nil {
+		return nil, err
+	}
+	return workspace, nil
+}
+
+func (r *WorkspaceRepository) UpdateStatus(ctx context.Context, id uint32, status string) error {
+	_, err := r.db.ModelContext(ctx, (*models.Workspace)(nil)).
+		Set("status = ?", status).
+		Where("id = ?", id).
+		Update()
+	return err
+}
+
+func (r *WorkspaceRepository) SetContainer(ctx context.Context, id uint32, containerID, status string) error {
+	_, err := r.db.ModelContext(ctx, (*models.Workspace)(nil)).
+		Set("container_id = ?, status = ?", containerID, status).
+		Where("id = ?", id).
+		Update()
 	return err
 }
