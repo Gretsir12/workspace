@@ -15,12 +15,20 @@ import (
 )
 
 type WorkspaceHandler struct {
-	s *service.WorkspaceService
+	s       *service.WorkspaceService
+	baseCtx context.Context // отменяется при остановке сервера
+	stop    context.CancelFunc
+	wg      sync.WaitGroup // активные WebSocket-сессии
 }
 
 func NewWorkspaceHandler(service *service.WorkspaceService) *WorkspaceHandler {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &WorkspaceHandler{
-		s: service,
+		s:       service,
+		baseCtx: ctx,
+		stop:    cancel,
 	}
 }
 
@@ -83,14 +91,25 @@ type frame struct {
 }
 
 func (h *WorkspaceHandler) Open(w http.ResponseWriter, r *http.Request) {
+	if h.baseCtx.Err() != nil { // сервер уже останавливается
+		httpserver.ResponseError(w, "server is shutting down", http.StatusServiceUnavailable)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
 	defer conn.Close()
 
+	h.wg.Add(1)
+	defer h.wg.Done()
+
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
+
+	stop := context.AfterFunc(h.baseCtx, cancel)
+	defer stop()
 
 	out := &wsWriter{conn: conn}
 
@@ -149,7 +168,7 @@ func (h *WorkspaceHandler) Open(w http.ResponseWriter, r *http.Request) {
 
 	// 3. Контейнер.
 	out.status("starting")
-	term, err := h.s.StartTerminal(ctx, workspace)
+	term, err := h.s.StartTerminal(ctx, workspace, req.ProjectId)
 	if err != nil {
 		out.fail(fmt.Sprintf("Failed to start container: %v", err))
 		return
@@ -198,5 +217,22 @@ func (h *WorkspaceHandler) Open(w http.ResponseWriter, r *http.Request) {
 				_ = term.Resize(ctx, m.Cols, m.Rows)
 			}
 		}
+	}
+}
+
+func (h *WorkspaceHandler) Shutdown(ctx context.Context) error {
+	h.stop()
+
+	done := make(chan struct{})
+	go func() {
+		h.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }

@@ -28,6 +28,8 @@ type EditFileRequest struct {
 }
 
 type File struct {
+	tableName struct{} `pg:"files"`
+
 	ID        uint32 `json:"id"`
 	ProjectID uint32 `json:"project_id"`
 	Path      string `json:"path"`

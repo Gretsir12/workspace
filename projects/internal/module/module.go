@@ -1,7 +1,9 @@
 package module
 
 import (
+	"context"
 	"log"
+	"time"
 	platform "workspaces/internal/platform/module"
 	"workspaces/projects/internal/handler"
 	"workspaces/projects/internal/repository"
@@ -17,6 +19,7 @@ type Handlers struct {
 
 type Module struct {
 	Handlers *Handlers
+	docker   *util.Docker
 }
 
 const (
@@ -32,7 +35,7 @@ func New(deps platform.Deps) *Module {
 
 	dockerUtil, err := util.NewDocker(nixpkgsRev)
 	if err != nil {
-		log.Fatal("Failed to start docker client: %v", err)
+		log.Fatalf("Failed to start docker client: %v", err)
 	}
 
 	projectRepo := repository.NewProjectRepository(deps.Cfg, deps.DB)
@@ -51,6 +54,20 @@ func New(deps platform.Deps) *Module {
 			Workspace: handler.NewWorkspaceHandler(workspaceSvc),
 		},
 	}
+}
+
+func (m *Module) Shutdown(ctx context.Context) error {
+	err := m.Handlers.Workspace.Shutdown(ctx)
+	if err != nil {
+		// Не успели дождаться сессий: добиваем контейнеры принудительно.
+		fctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if _, ferr := m.docker.RemoveManagedContainers(fctx); ferr != nil {
+			log.Printf("force cleanup: %v", ferr)
+		}
+	}
+	_ = m.docker.Close()
+	return err
 }
 
 func (m *Module) Name() string { return "projects" }

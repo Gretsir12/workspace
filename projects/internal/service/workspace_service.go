@@ -75,8 +75,13 @@ func (s *WorkspaceService) OpenWorkspace(ctx context.Context, body *models.Creat
 }
 
 // StartTerminal запускает контейнер и записывает его ID и статус в БД.
-func (s *WorkspaceService) StartTerminal(ctx context.Context, w models.Workspace) (*util.Terminal, error) {
-	term, err := s.docker.StartTerminal(ctx, w.Image.Image, w.ID)
+func (s *WorkspaceService) StartTerminal(ctx context.Context, w models.Workspace, projId uint32) (*util.Terminal, error) {
+	project, err := s.project_r.GetProjectById(ctx, projId)
+	if err != nil {
+		return nil, err
+	}
+
+	term, err := s.docker.StartTerminal(ctx, w.Image.Image, w.ID, s.cfg.ProjectPath+project.Path)
 	if err != nil {
 		s.setStatus(w.ID, models.WorkspaceFailed)
 		return nil, err

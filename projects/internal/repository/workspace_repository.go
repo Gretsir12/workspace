@@ -52,3 +52,14 @@ func (r *WorkspaceRepository) SetContainer(ctx context.Context, id uint32, conta
 		Update()
 	return err
 }
+
+func (r *WorkspaceRepository) StopAllActive(ctx context.Context) (int, error) {
+	res, err := r.db.ModelContext(ctx, (*models.Workspace)(nil)).
+		Set("status = ?", models.WorkspaceStopped).
+		Where("status IN (?)", pg.In([]string{models.WorkspacePending, models.WorkspaceRunning})).
+		Update()
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected(), nil
+}

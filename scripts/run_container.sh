@@ -1,3 +1,6 @@
+docker stop workspace-projects
+docker rm workspace-projects
+./scripts/build_image.sh
 docker run -d \
     -p 127.0.0.1:8000:8000 \
     --name workspace-projects \

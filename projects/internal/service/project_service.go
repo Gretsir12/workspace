@@ -75,7 +75,7 @@ func (s *ProjectService) createProjectDir(project *models.Project) error {
 }
 
 func (s *ProjectService) updateProjectPath(ctx context.Context, project *models.Project) error {
-	project.Path = s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title
+	project.Path = strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title
 
 	if err := s.r.UpdateProject(ctx, project); err != nil {
 		return fmt.Errorf("update path to project directory: %w", custom_errors.ErrProjectNotFound)

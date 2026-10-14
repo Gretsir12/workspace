@@ -4,14 +4,19 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/mount"
 	"github.com/moby/moby/client"
 )
 
-const labelWorkspace = "ide.workspace"
+const (
+	labelWorkspace = "ide.workspace"
+	workspaceDir   = "/workspace"
+)
 
 type Terminal struct {
 	d    *Docker
@@ -19,13 +24,20 @@ type Terminal struct {
 	conn client.HijackedResponse
 }
 
-// StartTerminal создаёт контейнер из образа, подключается к его TTY и запускает.
-// Attach делается ДО старта, чтобы не потерять начало вывода.
-func (d *Docker) StartTerminal(ctx context.Context, image string, workspaceID uint32) (*Terminal, error) {
+// StartTerminal создаёт контейнер из образа с примонтированным каталогом проекта,
+// подключается к его TTY и запускает. projectDir: абсолютный путь на хосте,
+// каталог должен существовать. Attach делается ДО старта, чтобы не потерять
+// начало вывода.
+func (d *Docker) StartTerminal(ctx context.Context, image string, workspaceID uint32, projectDir string) (*Terminal, error) {
 	created, err := d.api.ContainerCreate(ctx, client.ContainerCreateOptions{
 		Config: &container.Config{
-			Image:        image,
-			Cmd:          []string{"sh"},
+			Image:      image,
+			Cmd:        []string{"sh"},
+			WorkingDir: workspaceDir,
+			// Тот же UID, что у бэкенда: файлы, созданные из REST и из терминала,
+			// принадлежат одному пользователю и не мешают друг другу.
+			User:         fmt.Sprintf("%d:%d", os.Getuid(), os.Getgid()),
+			Env:          []string{"HOME=" + workspaceDir},
 			Tty:          true,
 			OpenStdin:    true,
 			AttachStdin:  true,
@@ -37,6 +49,11 @@ func (d *Docker) StartTerminal(ctx context.Context, image string, workspaceID ui
 			},
 		},
 		HostConfig: &container.HostConfig{
+			Mounts: []mount.Mount{{
+				Type:   mount.TypeBind,
+				Source: projectDir,
+				Target: workspaceDir,
+			}},
 			Resources: container.Resources{
 				Memory:    512 << 20,
 				PidsLimit: ptr(int64(256)),
