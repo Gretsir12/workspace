@@ -104,20 +104,24 @@ func (s *FileService) EditFile(ctx context.Context, body *models.EditFileRequest
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
-	// TODO: implement checking rights by a jwt token
+	proj, err := s.project_r.GetProjectById(ctx, file.ProjectID)
+	if err != nil {
+		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
+	}
 
+	// TODO: implement checking rights by a jwt token
 	// file.Path уже относителен PROJECT_PATH, поэтому берём его как есть.
 	rel, err := util.CleanRelPath(file.Path)
 	if err != nil {
 		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
-	root, err := filepath.Abs(s.cfg.ProjectPath)
+	projectDir, err := util.ProjectDir(s.cfg.ProjectPath, proj.Path)
 	if err != nil {
-		return file, err
+		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
-	if err := util.WriteFileAtomic(root, rel, []byte(body.Text)); err != nil {
+	if err := util.WriteFileAtomic(projectDir, rel, []byte(body.Text)); err != nil {
 		return file, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 

@@ -14,8 +14,10 @@ import (
 
 const (
 	nixpkgsRev   = "6510408d147d8c5e6d76043e899e9251756f6a75"
-	workspaceTTL = 8 * time.Hour // TODO: вынести в конфиг
+	workspaceTTL = 8 * time.Hour
 )
+
+var baseDependencies = []string{"gcc", "gnumake", "fzf", "tree", "pkg-config"}
 
 type WorkspaceService struct {
 	cfg         *config.Config
@@ -45,13 +47,16 @@ func NewWorkspaceService(
 // и workspace в БД. Сборку запускаем всегда: при готовом образе она отработает
 // из кеша слоёв и заодно гарантирует, что образ реально есть в Docker.
 func (s *WorkspaceService) OpenWorkspace(ctx context.Context, body *models.CreateWorkspaceRequest, logs io.Writer) (models.Workspace, error) {
-	tag, err := s.docker.BuildImageWithDeps(ctx, body.Dependencies, logs)
+
+	deps := append(body.Dependencies, baseDependencies...)
+
+	tag, err := s.docker.BuildImageWithDeps(ctx, deps, logs)
 	if err != nil {
 		return models.Workspace{}, err
 	}
 
 	image := models.Image{
-		Hash:       util.HashDependencies(body.Dependencies),
+		Hash:       util.HashDependencies(deps),
 		NixpkgsRev: nixpkgsRev,
 		Deps:       body.Dependencies,
 		Image:      tag,

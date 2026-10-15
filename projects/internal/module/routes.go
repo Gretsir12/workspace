@@ -5,6 +5,7 @@ import "github.com/go-chi/chi/v5"
 func (m *Module) Routes(r chi.Router) {
 	r.Get("/proj/{id}", m.Handlers.Project.Get)
 	r.Post("/proj", m.Handlers.Project.Create)
+	r.Put("/proj/{project_id}", m.Handlers.Project.EditProject)
 
 	r.Get("/files", m.Handlers.File.Get)
 	r.Get("/files/{project_id}", m.Handlers.File.GetAllProjectFiles)
