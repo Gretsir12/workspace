@@ -86,7 +86,8 @@ func (s *WorkspaceService) StartTerminal(ctx context.Context, w models.Workspace
 		return nil, err
 	}
 
-	term, err := s.docker.StartTerminal(ctx, w.Image.Image, w.ID, s.cfg.ProjectPath+project.Path)
+	// fmt.Println(s.cfg.ProjectPath + project.Path)
+	term, err := s.docker.StartTerminal(ctx, w.Image.Image, w.ID, s.cfg.ProjectPath+"/"+project.Path)
 	if err != nil {
 		s.setStatus(w.ID, models.WorkspaceFailed)
 		return nil, err

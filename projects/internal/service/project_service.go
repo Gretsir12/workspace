@@ -82,8 +82,8 @@ func (s *ProjectService) EditProject(ctx context.Context, projectId uint32, body
 
 // os.MkdirAll does not accept a context, so none is passed here
 func (s *ProjectService) createProjectDir(project *models.Project) error {
-	fmt.Println(s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title)
-	if err := os.MkdirAll(s.cfg.ProjectPath+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
+	// fmt.Println(s.cfg.ProjectPath + strconv.FormatUint(uint64(project.ID), 10) + "/" + project.Title)
+	if err := os.MkdirAll("./"+s.cfg.ProjectPath+strconv.FormatUint(uint64(project.ID), 10)+"/"+project.Title, 0755); err != nil {
 		return fmt.Errorf("create project directory: %w", err)
 	}
 	return nil

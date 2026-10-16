@@ -56,7 +56,7 @@ func (d *Docker) StartTerminal(ctx context.Context, image string, workspaceID ui
 			}},
 			Resources: container.Resources{
 				Memory:    512 << 20,
-				PidsLimit: ptr(int64(256)),
+				PidsLimit: new(int64(256)),
 			},
 			// NetworkMode: "none", // если интернет внутри не нужен
 		},
