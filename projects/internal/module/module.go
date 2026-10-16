@@ -53,19 +53,23 @@ func New(deps platform.Deps) *Module {
 			File:      handler.NewFileHandler(fileSvc),
 			Workspace: handler.NewWorkspaceHandler(workspaceSvc),
 		},
+		docker: dockerUtil,
 	}
 }
 
 func (m *Module) Shutdown(ctx context.Context) error {
 	err := m.Handlers.Workspace.Shutdown(ctx)
-	if err != nil {
-		// Не успели дождаться сессий: добиваем контейнеры принудительно.
-		fctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if _, ferr := m.docker.RemoveManagedContainers(fctx); ferr != nil {
-			log.Printf("force cleanup: %v", ferr)
-		}
+
+	// Всегда добиваем оставшиеся контейнеры: в том числе Created,
+	// которые не принадлежат ни одной сессии.
+	fctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if n, ferr := m.docker.RemoveManagedContainers(fctx); ferr != nil {
+		log.Printf("force cleanup: %v", ferr)
+	} else if n > 0 {
+		log.Printf("force cleanup: removed %d leftover containers", n)
 	}
+
 	_ = m.docker.Close()
 	return err
 }
