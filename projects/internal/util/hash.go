@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -17,8 +16,6 @@ func HashDependencies(deps []string) string {
 	sort.Strings(parts)
 
 	sum := sha256.Sum256([]byte(strings.Join(parts, "\n")))
-
-	fmt.Println(hex.EncodeToString(sum[:]))
 
 	return hex.EncodeToString(sum[:])
 }

@@ -159,7 +159,6 @@ func (d *Docker) dockerfile(deps []string) []byte {
 			d.nixpkgsRev, strings.Join(deps, " "))
 	}
 	b.WriteString("ENV PATH=/opt/env/bin:$PATH\n")
-	b.WriteString("RUN /opt/env/bin/rustc --version && /opt/env/bin/cargo --version\n")
 	return []byte(b.String())
 }
 

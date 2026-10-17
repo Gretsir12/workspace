@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"workspaces/internal/platform/httpserver" // поправьте путь под ваш проект
+	"workspaces/internal/platform/httpserver" // Поправьте путь под ваш проект
 	"workspaces/projects/internal/models"
 	"workspaces/projects/internal/service"
 
@@ -16,7 +16,7 @@ import (
 
 type WorkspaceHandler struct {
 	s       *service.WorkspaceService
-	baseCtx context.Context // отменяется при остановке сервера
+	baseCtx context.Context // Отменяется при остановке сервера
 	stop    context.CancelFunc
 	wg      sync.WaitGroup // активные WebSocket-сессии
 }
@@ -74,7 +74,7 @@ func (w *wsWriter) binary(p []byte) error {
 
 func (w *wsWriter) status(s string) { _ = w.json(progressMsg{Type: "status", Data: s}) }
 
-// fail отправляет ошибку вашим типом httpserver.ErrorResponse.
+// Fail отправляет ошибку вашим типом httpserver.ErrorResponse.
 func (w *wsWriter) fail(message string) {
 	_ = w.json(httpserver.ErrorResponse{Message: message, Timestamp: time.Now()})
 }
@@ -198,6 +198,7 @@ func (h *WorkspaceHandler) Open(w http.ResponseWriter, r *http.Request) {
 
 	// 5. Клиент -> контейнер: бинарные кадры идут в stdin,
 	// текстовые {"cols":..,"rows":..} меняют размер терминала.
+	var line []byte
 	for {
 		select {
 		case <-ctx.Done():
@@ -207,7 +208,7 @@ func (h *WorkspaceHandler) Open(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if f.binary {
-				if _, err := term.Write(f.data); err != nil {
+				if err := h.s.ForwardInput(ctx, term, &line, f.data, workspace.ID, req.ProjectId); err != nil {
 					return
 				}
 				continue

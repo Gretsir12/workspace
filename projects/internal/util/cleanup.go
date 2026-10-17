@@ -12,7 +12,7 @@ import (
 func (d *Docker) RemoveManagedContainers(ctx context.Context) (int, error) {
 	res, err := d.api.ContainerList(ctx, client.ContainerListOptions{
 		All:     true,
-		Filters: make(client.Filters).Add("label", labelWorkspace),
+		Filters: make(client.Filters).Add("label", labelWorkspace).Add("status", "created", "exited", "dead"),
 	})
 	if err != nil {
 		return 0, err
