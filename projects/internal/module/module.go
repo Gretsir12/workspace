@@ -45,7 +45,7 @@ func New(deps platform.Deps) *Module {
 
 	projectSvc := service.NewProjectService(deps.Cfg, projectRepo)
 	fileSvc := service.NewFileService(deps.Cfg, projectRepo, fileRepo)
-	workspaceSvc := service.NewWorkspaceService(deps.Cfg, projectRepo, workspaceRepo, imageRepo, dockerUtil)
+	workspaceSvc := service.NewWorkspaceService(deps.Cfg, projectRepo, workspaceRepo, imageRepo, fileRepo, dockerUtil)
 
 	return &Module{
 		Handlers: &Handlers{

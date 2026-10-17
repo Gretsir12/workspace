@@ -74,7 +74,7 @@ func (s *FileService) CreateNewFile(ctx context.Context, body models.CreateFileR
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
 	}
 
-	file := models.File{ProjectID: project.ID, Path: name, Text: ""}
+	file := models.File{ProjectID: project.ID, Path: name, Text: "", IsTextFile: true}
 	if err := s.file_r.SaveFile(ctx, &file); err != nil {
 		_ = util.RemoveFile(root, rel) // не оставляем осиротевший файл
 		return models.File{}, fmt.Errorf("%w: %v", custom_errors.ErrInvalidFile, err)
