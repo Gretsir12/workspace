@@ -5,9 +5,9 @@ import (
 )
 
 type CreateProjectRequest struct {
-	Title        *string      `json:"title"`
-	OwnerID      *int64       `json:"owner_id"`
-	Dependencies []Dependency `json:"dependencies"`
+	Title        *string  `json:"title"`
+	OwnerID      *int64   `json:"owner_id"`
+	Dependencies []string `json:"dependencies"`
 }
 
 func (r *CreateProjectRequest) Validate() error {
@@ -21,11 +21,11 @@ func (r *CreateProjectRequest) Validate() error {
 }
 
 type Project struct {
-	ID           uint32       `json:"id"`
-	User         uint32       `json:"user"`
-	Title        string       `json:"title"`
-	Path         string       `json:"path"`
-	Dependencies []Dependency `json:"dependencies"`
+	ID           uint32   `json:"id"`
+	User         uint32   `json:"user"`
+	Title        string   `json:"title"`
+	Path         string   `json:"path"`
+	Dependencies []string `json:"dependencies"`
 
 	WorkspaceId uint32 `json:"workspace_id"`
 }

@@ -62,3 +62,11 @@ func (r *FileRepository) GetAllFilesByProjectID(ctx context.Context, project_id 
 	}
 	return files, nil
 }
+
+func (r *FileRepository) DeleteFile(ctx context.Context, id uint32) error {
+	_, err := r.db.WithContext(ctx).
+		Model((*models.File)(nil)).
+		Where("id = ?", id).
+		Delete()
+	return err
+}

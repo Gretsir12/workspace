@@ -61,3 +61,31 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 		httpserver.ResponseError(w, fmt.Sprintf("Failed to create project: %v", err), custom_errors.StatusFromError(err))
 	}
 }
+
+func (h *ProjectHandler) EditProject(w http.ResponseWriter, r *http.Request) {
+	var b models.CreateProjectRequest
+
+	err := json.NewDecoder(r.Body).Decode(&b)
+	if err != nil {
+		httpserver.ResponseError(w, fmt.Sprintf("Failed to edit project: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	projId, err := strconv.ParseUint(r.PathValue("project_id"), 10, 32)
+	if err != nil {
+		httpserver.ResponseError(w, fmt.Sprintf("Failed to get project: %v", err), custom_errors.StatusFromError(err))
+		return
+	}
+
+	project, err := h.s.EditProject(r.Context(), uint32(projId), &b)
+	if err != nil {
+		httpserver.ResponseError(w, fmt.Sprintf("Failed to edit project: %v", err), custom_errors.StatusFromError(err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(project); err != nil {
+		httpserver.ResponseError(w, fmt.Sprintf("Failed to edit project: %v", err), custom_errors.StatusFromError(err))
+	}
+}

@@ -3,6 +3,7 @@ package custom_errors
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -44,6 +45,9 @@ func StatusFromError(err error) int {
 		return http.StatusBadRequest
 
 	case errors.Is(err, ErrInvalidQuery):
+		return http.StatusBadRequest
+
+	case errors.Is(err, io.ErrUnexpectedEOF):
 		return http.StatusBadRequest
 
 	default:

@@ -24,12 +24,16 @@ type GetFileRequest struct {
 
 type EditFileRequest struct {
 	ID   uint32 `json:"id"`
-	Text string `json:text`
+	Text string `json:"text"`
 }
 
 type File struct {
-	ID        uint32 `json:"id"`
-	ProjectID uint32 `json:"project_id"`
-	Path      string `json:"path"`
-	Text      string `json:"text"`
+	tableName struct{} `pg:"files"`
+
+	ID        uint32 `json:"id" pg:"id,pk"`
+	ProjectID uint32 `json:"project_id" pg:"project_id"`
+	Path      string `json:"path" pg:"path"`
+	Text      string `json:"text" pg:"text"`
+
+	IsTextFile bool `json:"is_text_file" pg:"is_text_file"`
 }
