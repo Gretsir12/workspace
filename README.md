@@ -108,9 +108,8 @@ HTTP (chi + httplog + cors)
 │       ├── repository/
 │       ├── service/
 │       └── util/                # docker.go, terminal.go, hash.go, query.go, flake.go
-├── container/                   # Dockerfile и flake.nix (TODO: описать назначение)
-├── scripts/                     # build_image.sh, run_container.sh (TODO: описать назначение)
-├── Dockerfile                   # TODO: описать назначение
+├── scripts/                     # build_image.sh, run_container.sh (скрипты для удобной сборки и запуска в проде)
+├── Dockerfile                   # Dockerfile для сборки образа приложения
 ├── Makefile
 ├── tests/
 └── tmp/                         # файлы проектов пользователей (PROJECT_PATH)
@@ -225,7 +224,7 @@ HTTP (chi + httplog + cors)
 | PUT | `/files` | JSON `{"id": 1, "text": "..."}` | обновлённый файл, 200 |
 | GET | `/ws` | WebSocket | см. ниже |
 
-Ошибки возвращаются в [общем формате](#платформа). Поля проекта и `CreateProjectRequest`: TODO (по `models/project.go`).
+Ошибки возвращаются в [общем формате](#платформа). Поля проекта и `CreateProjectRequest`: по `models/project.go`.
 
 **Файл** (`File`):
 
@@ -244,13 +243,11 @@ HTTP (chi + httplog + cors)
 
 **Образы.** Тег образа детерминирован: хеш от базового образа, ревизии nixpkgs и отсортированного списка пакетов. Одинаковый набор зависимостей даёт тот же образ, повторная сборка берётся из кеша слоёв. Ревизия nixpkgs зафиксирована в коде, поэтому окружение воспроизводимо.
 
-**Назначение `container/`, `scripts/` и `util/flake.go`:** TODO.
-
 ### Модуль users
 
 Планируется. Раздел заполняется по мере разработки.
 
-- Назначение: TODO
+- Назначение: Регистрация и авторизация пользователей, генерация JWT токенов
 - Маршруты: TODO
 - Модели и таблицы: TODO
 - Связь с `projects`: сейчас `user_id` в запросе на workspace приходит от клиента, без проверки.
@@ -294,17 +291,17 @@ HTTP (chi + httplog + cors)
 
 ## Файлы проектов на диске
 
-Файлы проектов пользователей лежат в каталоге `PROJECT_PATH` (в dev-окружении это `tmp/`). Раскладка, судя по текущему содержимому:
+Файлы проектов пользователей лежат в каталоге `PROJECT_PATH` (в dev-окружении это `tmp/`).
 
 ```
 tmp/
-└── <номер>/
+└── <id проекта>/
     └── <имя проекта>/
         └── src/
             └── main.rs
 ```
 
-TODO: уточнить, что означает `<номер>` (идентификатор проекта или пользователя) и как файлы попадают в контейнер.
+Файлы попадают в контейнер с помощью docker mounts
 
 ## Разработка
 
@@ -346,4 +343,24 @@ docker rm -f $(docker ps -aq --filter label=ide.managed=true)
 
 ## Лицензия
 
-TODO
+MIT License
+
+Copyright (c) 2026 https://github.com/Gretsir12
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
